@@ -37,4 +37,4 @@ The QRT Stock Return Prediction project aims to predict stock returns based on h
 
 ## Conclusion
 
-This project serves as a benchmark for stock return prediction and provides a foundation for further exploration and improvement in predictive modeling techniques.
+This project on stock return prediction provides a foundation for mastering predictive modeling techniques.

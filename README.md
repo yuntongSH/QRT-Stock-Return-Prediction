@@ -27,9 +27,9 @@ We approach this challenge through an end-to-end machine learning pipeline, incl
 
 ### 1. Data Cleaning
 
-- **Missing Returns**: Rows with missing values in `RET_1` to `RET_5` were dropped (~0.6% of data).
-- **Missing Volumes**: Missing values in volume features were imputed using the **mean volume per `INDUSTRY_GROUP` and `DATE`**.
-- **Categorical Consistency**: All categorical variables were aligned between training and test sets.
+- **Missing Returns**: Rows with any missing values across the full 20-day window (`RET_1` to `RET_20`) were removed from both datasets to ensure complete return history. This resulted in the removal of **6,126 rows from the training set (1.46%)** and **4,494 rows from the test set (2.26%)**.
+- **Missing Volumes**: Missing values in `VOLUME_1` to `VOLUME_20` were imputed using the **mean value of the same `INDUSTRY_GROUP` and `DATE`**. This preserves contextual consistency while reducing imputation bias.
+- **Categorical Consistency**: Categorical identifiers such as `STOCK`, `SECTOR`, `INDUSTRY`, and `INDUSTRY_GROUP` were preserved and checked to ensure alignment between training and test sets, avoiding category leakage or mismatches during encoding.
 
 ### 2. Feature Engineering
 

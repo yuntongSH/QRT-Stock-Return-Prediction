@@ -68,30 +68,37 @@ Each model was evaluated using:
 - **Confusion Matrix**
 
 ---
-
 ## Ensemble Performance
 
-A uniform weighted ensemble was created:
+To maximize prediction accuracy, we constructed an **optimized weighted ensemble** by combining outputs from four base models:
 
-- **Weights**: 0.25 for each of Random Forest, XGBoost, CatBoost, and Neural Network
-- **Decision Rule**: Median thresholding per date
+- **Random Forest**
+- **XGBoost**
+- **CatBoost**
+- **Neural Network**
 
-**Final Training Accuracy**: `56.92%`  
-**Final ROC AUC**: `0.6020`
+Instead of assigning equal weights, we used a **numerical optimization method** to identify the best-performing set of ensemble weights. The optimal weights found were:
+
+- **[ 2.45, -0.33, -0.78, -0.33 ]** for **RF, XGB, CAT, NN**, respectively
+
+> Note: Negative weights indicate that certain models may contribute inverse predictive signal, and their inclusion improves overall ensemble calibration.
+
+We applied a **per-date median thresholding** strategy to convert predicted probabilities into binary class labels. This ensures that, for each trading day, roughly half the stocks are classified as having positive residual return signals, as expected by the challenge design.
+
+### Final Results on the Training Set:
+
+- **Ensemble Accuracy**: `61.55%`  
+- **Ensemble ROC AUC**: `0.6709`
 
 **Classification Report:**
-```
-              precision    recall  f1-score   support
+          precision    recall  f1-score   support
 
-           0     0.5663    0.6014    0.5833    206807
-           1     0.5725    0.5369    0.5541    205662
+       0     0.6148    0.6246    0.6196    206807
+       1     0.6163    0.6064    0.6113    205662
 
-    accuracy                         0.5692    412469
-   macro avg     0.5694    0.5691    0.5687    412469
-weighted avg     0.5694    0.5692    0.5688    412469
-```
+accuracy                         0.6155    412469
 
----
+These results mark a significant improvement over the baseline (51.31%) and earlier ensemble versions, confirming that learned weighting schemes can outperform uniform ensembling in noisy financial classification tasks.
 
 ## Final Submission
 

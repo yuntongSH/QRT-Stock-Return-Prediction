@@ -16,7 +16,7 @@ Our team implemented and evaluated several classification models—including Ran
 - Analyze performance using accuracy, AUC, and classification metrics.
 
 ## Files
-- `Benchmark QRT.ipynb`: Main notebook containing the full pipeline: data cleaning, feature engineering, model training, evaluation, and ensemble learning.
+- `QRT Stock Return Prediction Notebook.ipynb`: Main notebook containing the full pipeline: data cleaning, feature engineering, model training, evaluation, and ensemble learning.
 
 ## Usage Instructions
 

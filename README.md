@@ -2,47 +2,82 @@
 # QRT Stock Return Prediction
 
 ## Introduction
-The **QRT Stock Return Prediction** project is a machine learning challenge focused on predicting the *sign of residual stock returns* in the U.S. equity market using 20 days of historical data. Residual returns are computed after removing market-wide effects, making the problem highly relevant to real-world quantitative investment strategies where signal-to-noise ratios are low.
 
-Our team implemented and evaluated several classification models—including **Random Forest**, **XGBoost**, **CatBoost**, and a **Neural Network**—and combined them using a **weighted ensemble** to improve predictive performance.
+This project is part of our student initiative to tackle the **Qube Research & Technologies (QRT)** stock return prediction challenge. The task is to predict the **sign of residual returns** (returns stripped of market-wide effects) of U.S. equities using 20 business days of historical data. With over **600,000 samples**, this challenge is representative of real-world quantitative finance problems where the **signal-to-noise ratio is extremely low**.
 
-🔗 **Challenge Link**: [QRT Stock Return Prediction — Challenge Data](https://challengedata.ens.fr/participants/challenges/23/#)
+We approach this challenge through an end-to-end machine learning pipeline, including data cleaning, feature engineering, modeling with multiple algorithms, and ensemble learning for final prediction.
 
-## Objectives
-- Load and preprocess historical stock data.
-- Engineer informative features using time-series and group-based techniques.
-- Train and evaluate multiple machine learning models.
-- Implement an ensemble model for improved robustness and accuracy.
-- Analyze performance using accuracy, AUC, and classification metrics.
+🔗 **Official Challenge**: [QRT Stock Return Prediction on Challenge Data](https://challengedata.ens.fr/participants/challenges/23/#)
 
-## Files
-- `QRT Stock Return Prediction Notebook.ipynb`: This is the main Jupyter Notebook containing the full pipeline: data loading, preprocessing, feature engineering, model training, evaluation, ensemble learning, and final submission generation.
+---
 
-## Usage Instructions
+## Dataset Description
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/QRT-Stock-Return-Prediction.git
-cd QRT-Stock-Return-Prediction
-```
+- **Training Set**: 418,595 samples
+- **Test Set**: 198,429 samples
+- **Features**:
+  - 20-day historical residual returns: `RET_1` to `RET_20`
+  - 20-day relative volumes: `VOLUME_1` to `VOLUME_20`
+  - Categorical: `STOCK`, `SECTOR`, `INDUSTRY`, `INDUSTRY_GROUP`, `SUB_INDUSTRY`
+  - Target: `RET` (binary, top 50% residual return → 1)
 
-### 2. Install Required Libraries
-```bash
-pip install pandas numpy scikit-learn xgboost catboost tensorflow seaborn matplotlib
-```
+---
 
-### 3. Run the Notebook
-Open `QRT Stock Return Prediction Notebook.ipynb` using Jupyter Notebook or VS Code, and run all cells step-by-step.
+## Pipeline Overview
 
-### 4. Prepare the Dataset
-Ensure the input data files (`x_train.csv`, `y_train.csv`, and `x_test.csv`) are located in the same directory as the notebook.
+### 1. Data Cleaning
 
-## Model Performance
+- **Missing Returns**: Rows with missing values in `RET_1` to `RET_5` were dropped (~0.6% of data).
+- **Missing Volumes**: Missing values in volume features were imputed using the **mean volume per `INDUSTRY_GROUP` and `DATE`**.
+- **Categorical Consistency**: All categorical variables were aligned between training and test sets.
 
-After full training and validation, the ensemble model (combining Random Forest, XGBoost, CatBoost, and Neural Network with equal weights) achieved the following performance on the training set:
+### 2. Feature Engineering
 
-- **Ensemble Accuracy**: 56.92%
-- **Ensemble ROC AUC**: 0.6020
+We engineered advanced features to enrich the signal:
+
+- **Moving Averages (MA)**: 5-day and 10-day rolling averages over return windows.
+- **Exponential Moving Averages (EMA)**: Smoothed features with decayed emphasis on recent days.
+- **MACD**: Difference between short-term and long-term EMAs, capturing momentum shifts.
+- **Volatility**: Standard deviation of 20-day return history.
+- **Group-Based Aggregations**: Mean returns per `SECTOR` and `INDUSTRY_GROUP` per date.
+
+All features were standardized using `StandardScaler` to ensure uniform input to machine learning models.
+
+### 3. Feature Selection
+
+Selected features include:
+- Historical: `RET_1` to `RET_5`, `VOLUME_1` to `VOLUME_5`
+- Engineered: `VOLATILITY`, `RET_MA*`, `RET_EMA*`, `RET_MACD*`, `RET_IN_SECTOR*`
+- Total number of features used: *varies based on data quality*
+
+---
+
+## Models and Evaluation
+
+We trained and validated four models using time-based cross-validation (KFold on `DATE`):
+
+- **Random Forest**: 500 trees, max depth 10
+- **XGBoost**: 100 trees, depth 4, learning rate 0.05
+- **CatBoost**: 200 iterations, depth 4
+- **Neural Network**: 4-layer MLP with dropout and batch normalization
+
+Each model was evaluated using:
+- **Accuracy**
+- **ROC AUC**
+- **Classification Report**
+- **Confusion Matrix**
+
+---
+
+## Ensemble Performance
+
+A uniform weighted ensemble was created:
+
+- **Weights**: 0.25 for each of Random Forest, XGBoost, CatBoost, and Neural Network
+- **Decision Rule**: Median thresholding per date
+
+**Final Training Accuracy**: `56.92%`  
+**Final ROC AUC**: `0.6020`
 
 **Classification Report:**
 ```
@@ -56,13 +91,34 @@ After full training and validation, the ensemble model (combining Random Forest,
 weighted avg     0.5694    0.5692    0.5688    412469
 ```
 
-## Final Submission: Ensemble Model Inference
+---
 
-In this final stage, we apply our trained models to the unseen test data to generate predictions for submission. We use the same set of selected and normalized features to maintain consistency with the training pipeline. Each of the four trained models—**Random Forest**, **XGBoost**, **CatBoost**, and the **Neural Network**—generates probability predictions on the test set.
+## Final Submission
 
-These probabilities are combined using a **uniform weighted ensemble** (25% each), which helps balance the strengths of each individual model. To finalize the predictions, we apply a **median-based thresholding** strategy per date: stocks with a predicted return probability above the daily median are assigned a label of 1 (top 50%), and others a label of 0.
+- Test predictions were generated using the final ensemble model.
+- A threshold per date was applied to assign class labels.
+- Output was saved in submission format as: `qrt_output_stock_return_prediction.csv`.
 
-The resulting predictions are saved in the required submission format as a CSV file (`qrt_output_stock_return_prediction.csv`), ready to be evaluated on the challenge platform.
+---
+
+## Usage
+
+### Requirements
+```bash
+pip install pandas numpy scikit-learn xgboost catboost tensorflow seaborn matplotlib
+```
+
+### Run
+Open the notebook:
+```
+QRT Stock Return Prediction Notebook.ipynb
+```
+and execute the cells in sequence.
+
+Place the required files (`x_train.csv`, `y_train.csv`, `x_test.csv`) in the notebook directory.
+
+---
 
 ## Conclusion
-This project demonstrates the power of combining machine learning models for time-series classification in financial data. Through feature engineering, careful validation, and ensemble methods, we successfully improved prediction accuracy in a noisy and complex domain.
+
+This project demonstrates the complete development of a multi-model machine learning system for noisy financial time-series classification. Through structured preprocessing, targeted feature engineering, and robust ensembling, we surpassed the baseline benchmark (51.31% accuracy) with a final model achieving nearly 57% accuracy and over 60% ROC AUC.

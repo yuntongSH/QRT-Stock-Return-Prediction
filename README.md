@@ -2,11 +2,11 @@
 # QRT Stock Return Prediction
 
 ## Introduction
-The QRT Stock Return Prediction project is a machine learning challenge focused on predicting the sign of residual stock returns in the U.S. equity market using 20 days of historical data. Residual returns are computed after removing market-wide effects, making the problem highly relevant to real-world quantitative investment strategies where signal-to-noise ratios are low.
+The **QRT Stock Return Prediction** project is a machine learning challenge focused on predicting the *sign of residual stock returns* in the U.S. equity market using 20 days of historical data. Residual returns are computed after removing market-wide effects, making the problem highly relevant to real-world quantitative investment strategies where signal-to-noise ratios are low.
 
-Our team implemented and evaluated several classification models—including Random Forest, XGBoost, CatBoost, and a Neural Network—and combined them using a weighted ensemble to improve predictive performance.
+Our team implemented and evaluated several classification models—including **Random Forest**, **XGBoost**, **CatBoost**, and a **Neural Network**—and combined them using a **weighted ensemble** to improve predictive performance.
 
-🔗 **Challenge Link**: https://challengedata.ens.fr/participants/challenges/23/#
+🔗 **Challenge Link**: [QRT Stock Return Prediction — Challenge Data](https://challengedata.ens.fr/participants/challenges/23/#)
 
 ## Objectives
 - Load and preprocess historical stock data.
@@ -16,7 +16,7 @@ Our team implemented and evaluated several classification models—including Ran
 - Analyze performance using accuracy, AUC, and classification metrics.
 
 ## Files
-- `QRT Stock Return Prediction Notebook.ipynb`: Main notebook containing the full pipeline: data cleaning, feature engineering, model training, evaluation, and ensemble learning.
+- `QRT Stock Return Prediction Notebook.ipynb`: This is the main Jupyter Notebook containing the full pipeline: data loading, preprocessing, feature engineering, model training, evaluation, ensemble learning, and final submission generation.
 
 ## Usage Instructions
 
@@ -32,7 +32,7 @@ pip install pandas numpy scikit-learn xgboost catboost tensorflow seaborn matplo
 ```
 
 ### 3. Run the Notebook
-Open `Benchmark QRT.ipynb` using Jupyter Notebook or VS Code, and run all cells step-by-step.
+Open `QRT Stock Return Prediction Notebook.ipynb` using Jupyter Notebook or VS Code, and run all cells step-by-step.
 
 ### 4. Prepare the Dataset
 Ensure the input data files (`x_train.csv`, `y_train.csv`, and `x_test.csv`) are located in the same directory as the notebook.
@@ -55,6 +55,14 @@ After full training and validation, the ensemble model (combining Random Forest,
    macro avg     0.5694    0.5691    0.5687    412469
 weighted avg     0.5694    0.5692    0.5688    412469
 ```
+
+## Final Submission: Ensemble Model Inference
+
+In this final stage, we apply our trained models to the unseen test data to generate predictions for submission. We use the same set of selected and normalized features to maintain consistency with the training pipeline. Each of the four trained models—**Random Forest**, **XGBoost**, **CatBoost**, and the **Neural Network**—generates probability predictions on the test set.
+
+These probabilities are combined using a **uniform weighted ensemble** (25% each), which helps balance the strengths of each individual model. To finalize the predictions, we apply a **median-based thresholding** strategy per date: stocks with a predicted return probability above the daily median are assigned a label of 1 (top 50%), and others a label of 0.
+
+The resulting predictions are saved in the required submission format as a CSV file (`qrt_output_stock_return_prediction.csv`), ready to be evaluated on the challenge platform.
 
 ## Conclusion
 This project demonstrates the power of combining machine learning models for time-series classification in financial data. Through feature engineering, careful validation, and ensemble methods, we successfully improved prediction accuracy in a noisy and complex domain.

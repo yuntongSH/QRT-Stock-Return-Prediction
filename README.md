@@ -128,4 +128,4 @@ Place the required files (`x_train.csv`, `y_train.csv`, `x_test.csv`) in the not
 
 ## Conclusion
 
-This project demonstrates the complete development of a multi-model machine learning system for noisy financial time-series classification. Through structured preprocessing, targeted feature engineering, and robust ensembling, we surpassed the baseline benchmark (51.31% accuracy) with a final model achieving nearly 57% accuracy and over 60% ROC AUC.
+This project demonstrates the complete development of a multi-model machine learning system for noisy financial time-series classification. Through structured preprocessing, targeted feature engineering, and robust ensembling, we surpassed the baseline benchmark.

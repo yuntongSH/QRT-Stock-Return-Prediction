@@ -1,11 +1,10 @@
-
 # QRT Stock Return Prediction
 
 ## Introduction
 
-This project is part of our student initiative to tackle the **Qube Research & Technologies (QRT)** stock return prediction challenge. The task is to predict the **sign of residual returns** (returns stripped of market-wide effects) of U.S. equities using 20 business days of historical data. With over **600,000 samples**, this challenge is representative of real-world quantitative finance problems where the **signal-to-noise ratio is extremely low**.
+This project is part of our student initiative in the **Executive Master of Artificial Intelligence and Data Science at Dauphine PSL**, participating in the **Qube Research & Technologies (QRT)** stock return prediction challenge. The goal is to predict the **sign of residual stock returns**—returns adjusted to remove market-wide influences—based on 20 business days of historical data.
 
-We approach this challenge through an end-to-end machine learning pipeline, including data cleaning, feature engineering, modeling with multiple algorithms, and ensemble learning for final prediction.
+With over **600,000 samples**, the challenge mirrors real-world quantitative finance problems where the **signal-to-noise ratio is exceptionally low**. Our project explores both classical and deep learning models in this noisy time-series environment.
 
 🔗 **Official Challenge**: [QRT Stock Return Prediction on Challenge Data](https://challengedata.ens.fr/participants/challenges/23/#)
 
@@ -16,10 +15,10 @@ We approach this challenge through an end-to-end machine learning pipeline, incl
 - **Training Set**: 418,595 samples
 - **Test Set**: 198,429 samples
 - **Features**:
-  - 20-day historical residual returns: `RET_1` to `RET_20`
-  - 20-day relative volumes: `VOLUME_1` to `VOLUME_20`
+  - `RET_1` to `RET_20`: 20-day historical residual returns
+  - `VOLUME_1` to `VOLUME_20`: 20-day relative volumes
   - Categorical: `STOCK`, `SECTOR`, `INDUSTRY`, `INDUSTRY_GROUP`, `SUB_INDUSTRY`
-  - Target: `RET` (binary, top 50% residual return → 1)
+  - Target: `RET` (binary, return sign)
 
 ---
 
@@ -27,84 +26,69 @@ We approach this challenge through an end-to-end machine learning pipeline, incl
 
 ### 1. Data Cleaning
 
-- **Missing Returns**: Rows with any missing values across the full 20-day window (`RET_1` to `RET_20`) were removed from both datasets to ensure complete return history. This resulted in the removal of **6,126 rows from the training set (1.46%)** and **4,494 rows from the test set (2.26%)**.
-- **Missing Volumes**: Missing values in `VOLUME_1` to `VOLUME_20` were imputed using the **mean value of the same `INDUSTRY_GROUP` and `DATE`**. This preserves contextual consistency while reducing imputation bias.
-- **Categorical Consistency**: Categorical identifiers such as `STOCK`, `SECTOR`, `INDUSTRY`, and `INDUSTRY_GROUP` were preserved and checked to ensure alignment between training and test sets, avoiding category leakage or mismatches during encoding.
+- **Missing Returns**: Rows missing any `RET_1` to `RET_20` were dropped:  
+  - 6,126 rows from training  
+  - 4,494 rows from test
+- **Missing Volumes**: Imputed using **industry group and date-wise means**.
+- **Categorical Alignment**: Verified consistency across `STOCK`, `SECTOR`, `INDUSTRY`, and `SUB_INDUSTRY`.
 
 ### 2. Feature Engineering
 
-We engineered advanced features to enrich the signal:
+New and enhanced features:
+- **Moving Averages (MA)** and **Exponential Moving Averages (EMA)**
+- **MACD** indicators
+- **Volatility**: Std dev of return history
+- **Group Aggregations**: Mean return per `SECTOR` and `INDUSTRY_GROUP` by date
 
-- **Moving Averages (MA)**: 5-day and 10-day rolling averages over return windows.
-- **Exponential Moving Averages (EMA)**: Smoothed features with decayed emphasis on recent days.
-- **MACD**: Difference between short-term and long-term EMAs, capturing momentum shifts.
-- **Volatility**: Standard deviation of 20-day return history.
-- **Group-Based Aggregations**: Mean returns per `SECTOR` and `INDUSTRY_GROUP` per date.
-
-All features were standardized using `StandardScaler` to ensure uniform input to machine learning models.
-
-### 3. Feature Selection
-
-Selected features include:
-- Historical: `RET_1` to `RET_5`, `VOLUME_1` to `VOLUME_5`
-- Engineered: `VOLATILITY`, `RET_MA*`, `RET_EMA*`, `RET_MACD*`, `RET_IN_SECTOR*`
-- Total number of features used: *varies based on data quality*
+All features are standardized via `StandardScaler`.
 
 ---
 
 ## Models and Evaluation
 
-We trained and validated four models using time-based cross-validation (KFold on `DATE`):
+We developed and validated the following models using time-based cross-validation (KFold over `DATE`):
 
-- **Random Forest**: 500 trees, max depth 10
-- **XGBoost**: 100 trees, depth 4, learning rate 0.05
-- **CatBoost**: 200 iterations, depth 4
-- **Neural Network**: 4-layer MLP with dropout and batch normalization
+- **Random Forest**: 500 trees, depth=10  
+- **XGBoost**: 100 estimators, depth=4  
+- **CatBoost**: 200 iterations  
+- **Neural Network**: 4-layer MLP with dropout and batch norm
 
-Each model was evaluated using:
+### Evaluation Metrics
 - **Accuracy**
 - **ROC AUC**
 - **Classification Report**
 - **Confusion Matrix**
 
 ---
-## Ensemble Performance
 
-To maximize prediction accuracy, we constructed an **optimized weighted ensemble** by combining outputs from four base models:
+## Ensemble Strategy
 
-- **Random Forest**
-- **XGBoost**
-- **CatBoost**
-- **Neural Network**
+We built a **numerically optimized weighted ensemble** of the four base models:
 
-Instead of assigning equal weights, we used a **numerical optimization method** to identify the best-performing set of ensemble weights. The optimal weights found were:
+- Final weights: `[ 2.45, -0.33, -0.78, -0.33 ]` for **RF, XGB, CAT, NN**
+- Applied **per-date median thresholding** for label binarization, conforming to challenge logic.
 
-- **[ 2.45, -0.33, -0.78, -0.33 ]** for **RF, XGB, CAT, NN**, respectively
+### Final Training Results
 
-> Note: Negative weights indicate that certain models may contribute inverse predictive signal, and their inclusion improves overall ensemble calibration.
-
-We applied a **per-date median thresholding** strategy to convert predicted probabilities into binary class labels. This ensures that, for each trading day, roughly half the stocks are classified as having positive residual return signals, as expected by the challenge design.
-
-### Final Results on the Training Set:
-
-- **Ensemble Accuracy**: `61.55%`  
-- **Ensemble ROC AUC**: `0.6709`
+- **Accuracy**: `61.55%`
+- **ROC AUC**: `0.6709`
 
 **Classification Report:**
+```
           precision    recall  f1-score   support
-
        0     0.6148    0.6246    0.6196    206807
        1     0.6163    0.6064    0.6113    205662
+```
 
-accuracy                         0.6155    412469
+This is a large improvement over the baseline (51.31%).
 
-These results mark a significant improvement over the baseline (51.31%) and earlier ensemble versions, confirming that learned weighting schemes can outperform uniform ensembling in noisy financial classification tasks.
+---
 
 ## Final Submission
 
-- Test predictions were generated using the final ensemble model.
-- A threshold per date was applied to assign class labels.
-- Output was saved in submission format as: `qrt_output_stock_return_prediction.csv`.
+- Predictions generated from the ensemble model
+- Thresholding applied per date
+- Output format: `qrt_output_stock_return_prediction.csv`
 
 ---
 
@@ -112,20 +96,20 @@ These results mark a significant improvement over the baseline (51.31%) and earl
 
 ### Requirements
 ```bash
-pip install pandas numpy scikit-learn xgboost catboost tensorflow seaborn matplotlib
+pip install pandas numpy scikit-learn xgboost catboost tensorflow seaborn matplotlib shap
 ```
 
 ### Run
+
 Open the notebook:
 ```
 QRT Stock Return Prediction Notebook.ipynb
 ```
-and execute the cells in sequence.
 
-Place the required files (`x_train.csv`, `y_train.csv`, `x_test.csv`) in the notebook directory.
+Make sure the data files (`x_train.csv`, `y_train.csv`, `x_test.csv`) are in the same directory.
 
 ---
 
 ## Conclusion
 
-This project demonstrates the complete development of a multi-model machine learning system for noisy financial time-series classification. Through structured preprocessing, targeted feature engineering, and robust ensembling, we surpassed the baseline benchmark.
+This project provides a full-stack machine learning pipeline for financial time-series classification, incorporating both engineered and deep features, hybrid modeling, and a data-driven ensemble strategy. The approach significantly outperforms the baseline, highlighting the benefits of structured feature processing and ensemble learning in noisy data environments.

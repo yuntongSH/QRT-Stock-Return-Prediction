@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project is part of our student initiative in the **Executive Master of Artificial Intelligence and Data Science at Dauphine PSL**, participating in the **Qube Research & Technologies (QRT)** stock return prediction challenge. The goal is to predict the **sign of residual stock returns**—returns adjusted to remove market-wide influences—based on 20 business days of historical data.
+This project is part of our student project in the **Executive Master of Artificial Intelligence and Data Science at Dauphine PSL**, participating in the **Qube Research & Technologies (QRT)** stock return prediction challenge. The goal is to predict the **sign of residual stock returns**—returns adjusted to remove market-wide influences—based on 20 business days of historical data.
 
 With over **600,000 samples**, the challenge mirrors real-world quantitative finance problems where the **signal-to-noise ratio is exceptionally low**. Our project explores both classical and deep learning models in this noisy time-series environment.
 
@@ -105,9 +105,6 @@ Open the notebook:
 ```
 QRT Stock Return Prediction Notebook.ipynb
 ```
-
-Make sure the data files (`x_train.csv`, `y_train.csv`, `x_test.csv`) are in the same directory.
-
 ---
 
 ## Conclusion
